@@ -40,20 +40,20 @@ export function deleteSkill(id: string): void {
 export function createNewSkill(): SkillDraft {
   return {
     id: Math.random().toString(36).substring(2, 9),
-    name: 'Analizador de Código Seguro',
-    purpose: 'Analizar fragmentos de código en busca de vulnerabilidades comunes (OWASP Top 10) y proponer correcciones.',
-    problem: 'Los desarrolladores a menudo pasan por alto errores de seguridad básicos durante el desarrollo rápido, lo que lleva a vulnerabilidades en producción.',
+    name: 'Analizador de Código Seguro (Semanas 11-15)',
+    purpose: 'Analizar fragmentos de código en busca de vulnerabilidades comunes (OWASP) y proponer correcciones automáticas siguiendo el estándar MCP.',
+    problem: 'La falta de revisión de seguridad inmediata en el ciclo de desarrollo (Inner Loop), lo que genera deuda técnica y riesgos de seguridad en producción.',
     inputProperties: [
-      { name: 'codigo', type: 'string', description: 'El fragmento de código a analizar', required: true },
-      { name: 'lenguaje', type: 'string', description: 'Lenguaje de programación (js, python, etc)', required: true }
+      { name: 'codigo', type: 'string', description: 'El fragmento de código fuente a analizar para buscar fallos de seguridad.', required: true },
+      { name: 'contexto', type: 'string', description: 'Descripción del entorno donde corre el código (ej. web, móvil, backend).', required: false }
     ],
     outputProperties: [
-      { name: 'vulnerabilidades', type: 'array', description: 'Lista de hallazgos encontrados', required: true },
-      { name: 'sugerencia', type: 'string', description: 'Código corregido propuesto', required: true }
+      { name: 'vulnerabilidades', type: 'array', description: 'Lista detallada de fallos encontrados con nivel de criticidad.', required: true },
+      { name: 'solucion_sugerida', type: 'string', description: 'Código refactorizado que resuelve el problema detectado.', required: true }
     ],
     studentName: '',
     universityName: '',
-    courseName: 'IA Generativa y Agentes',
+    courseName: 'IA Generativa y Agentes (MCP/Skills)',
     updatedAt: Date.now(),
   };
 }
