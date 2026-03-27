@@ -5,8 +5,9 @@ import Link from "next/link";
 import { Plus, FileText, Clock, Trash2, ArrowRight, Code2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { getSkills, deleteSkill, createNewSkill } from "@/lib/storage";
+import { getSkills, deleteSkill } from "@/lib/storage";
 import { formatDistanceToNow } from "date-fns";
+import { es } from "date-fns/locale";
 import type { SkillDraft } from "@/types/skill";
 
 export default function Dashboard() {
@@ -21,7 +22,7 @@ export default function Dashboard() {
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
-    if (confirm("Are you sure you want to delete this skill draft?")) {
+    if (confirm("¿Estás seguro de que deseas eliminar este borrador de habilidad?")) {
       deleteSkill(id);
       setSkills(getSkills());
     }
@@ -41,7 +42,7 @@ export default function Dashboard() {
           </div>
           <Link href="/editor">
             <Button className="bg-primary hover:bg-primary/90 text-white gap-2 px-6">
-              <Plus className="w-4 h-4" /> Create New Skill
+              <Plus className="w-4 h-4" /> Crear Nueva Habilidad
             </Button>
           </Link>
         </div>
@@ -50,11 +51,11 @@ export default function Dashboard() {
       <main className="container mx-auto px-6 pt-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <h2 className="text-3xl font-bold mb-2">My Skill Drafts</h2>
-            <p className="text-muted-foreground">Manage and refine your custom AI agent skill documentation.</p>
+            <h2 className="text-3xl font-bold mb-2">Mis Borradores</h2>
+            <p className="text-muted-foreground">Gestiona y perfecciona la documentación de tus habilidades de IA.</p>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5"><FileText className="w-4 h-4" /> {skills.length} Drafts</span>
+            <span className="flex items-center gap-1.5"><FileText className="w-4 h-4" /> {skills.length} Borradores</span>
           </div>
         </div>
 
@@ -64,13 +65,13 @@ export default function Dashboard() {
               <FileText className="w-10 h-10 text-muted-foreground opacity-50" />
             </div>
             <div className="max-w-md">
-              <h3 className="text-xl font-semibold mb-2">Ready to Forge a New Skill?</h3>
+              <h3 className="text-xl font-semibold mb-2">¿Listo para forjar una nueva habilidad?</h3>
               <p className="text-muted-foreground mb-8">
-                You haven't created any skills yet. Start by defining metadata, input/output schemas, and generate professional AI documentation.
+                Aún no has creado ninguna habilidad. Comienza definiendo los metadatos, esquemas de entrada/salida y genera documentación profesional.
               </p>
               <Link href="/editor">
                 <Button size="lg" className="bg-primary text-white gap-2">
-                  <Plus className="w-5 h-5" /> Start First Draft
+                  <Plus className="w-5 h-5" /> Comenzar Primer Borrador
                 </Button>
               </Link>
             </div>
@@ -96,25 +97,25 @@ export default function Dashboard() {
                     </div>
                     <CardTitle className="line-clamp-1">{skill.name}</CardTitle>
                     <CardDescription className="line-clamp-2 h-10 mt-1">
-                      {skill.purpose || "No description provided yet."}
+                      {skill.purpose || "Sin descripción proporcionada aún."}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="flex-1 pb-4">
                     <div className="flex gap-4 text-xs text-muted-foreground">
                       <div className="flex flex-col gap-1">
-                        <span className="font-semibold text-foreground">Inputs</span>
-                        <span>{skill.inputProperties.length} fields</span>
+                        <span className="font-semibold text-foreground">Entradas</span>
+                        <span>{skill.inputProperties.length} campos</span>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <span className="font-semibold text-foreground">Outputs</span>
-                        <span>{skill.outputProperties.length} fields</span>
+                        <span className="font-semibold text-foreground">Salidas</span>
+                        <span>{skill.outputProperties.length} campos</span>
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter className="pt-4 border-t border-border/50 flex justify-between items-center text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-3 h-3" />
-                      {formatDistanceToNow(skill.updatedAt)} ago
+                      hace {formatDistanceToNow(skill.updatedAt, { locale: es })}
                     </div>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-primary" />
                   </CardFooter>

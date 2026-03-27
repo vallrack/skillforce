@@ -15,10 +15,10 @@ export function MetadataForm({ name, purpose, problem, onChange }: MetadataFormP
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="name" className="text-sm font-medium">Skill Name</Label>
+        <Label htmlFor="name" className="text-sm font-medium">Nombre de la Habilidad</Label>
         <Input
           id="name"
-          placeholder="e.g. Code Review Assistant"
+          placeholder="ej. Asistente de Revisión de Código"
           value={name}
           onChange={(e) => onChange({ name: e.target.value })}
           className="bg-card/50 border-border"
@@ -26,10 +26,10 @@ export function MetadataForm({ name, purpose, problem, onChange }: MetadataFormP
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="purpose" className="text-sm font-medium">Core Purpose</Label>
+        <Label htmlFor="purpose" className="text-sm font-medium">Propósito Principal</Label>
         <Textarea
           id="purpose"
-          placeholder="Explain what this skill aims to achieve..."
+          placeholder="Explica qué busca lograr esta habilidad..."
           value={purpose}
           onChange={(e) => onChange({ purpose: e.target.value })}
           className="bg-card/50 border-border min-h-[100px]"
@@ -37,10 +37,10 @@ export function MetadataForm({ name, purpose, problem, onChange }: MetadataFormP
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="problem" className="text-sm font-medium">Problem Solved</Label>
+        <Label htmlFor="problem" className="text-sm font-medium">Problema que Resuelve</Label>
         <Textarea
           id="problem"
-          placeholder="What real-world pain point does this address?"
+          placeholder="¿Qué punto de dolor real aborda?"
           value={problem}
           onChange={(e) => onChange({ problem: e.target.value })}
           className="bg-card/50 border-border min-h-[100px]"

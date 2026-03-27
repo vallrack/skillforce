@@ -40,7 +40,7 @@ export function deleteSkill(id: string): void {
 export function createNewSkill(): SkillDraft {
   return {
     id: Math.random().toString(36).substring(2, 9),
-    name: 'New Skill',
+    name: 'Nueva Habilidad',
     purpose: '',
     problem: '',
     inputProperties: [],

@@ -1,30 +1,30 @@
 'use server';
 /**
- * @fileOverview A flow to generate documentation for an AI skill, including usage examples and instructions.
+ * @fileOverview Un flujo para generar documentación de una habilidad de IA, incluyendo ejemplos de uso e instrucciones.
  *
- * - generateSkillDocumentation - A function that generates markdown documentation for a skill.
- * - GenerateSkillDocumentationInput - The input type for the generateSkillDocumentation function.
- * - GenerateSkillDocumentationOutput - The return type for the generateSkillDocumentation function.
+ * - generateSkillDocumentation - Una función que genera documentación en markdown para una habilidad.
+ * - GenerateSkillDocumentationInput - El tipo de entrada para la función generateSkillDocumentation.
+ * - GenerateSkillDocumentationOutput - El tipo de retorno para la función generateSkillDocumentation.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 /**
- * Represents the input for generating skill documentation.
+ * Representa la entrada para generar la documentación de la habilidad.
  */
 const GenerateSkillDocumentationInputSchema = z.object({
-  skillName: z.string().describe('The name of the skill.'),
-  skillPurpose: z.string().describe('The main purpose or goal of the skill.'),
+  skillName: z.string().describe('El nombre de la habilidad.'),
+  skillPurpose: z.string().describe('El propósito principal o meta de la habilidad.'),
   problemSolved:
-    z.string().describe('A description of the real-world problem the skill aims to solve.'),
+    z.string().describe('Una descripción del problema real que la habilidad busca resolver.'),
   inputSchemaDefinition:
     z.string().describe(
-      'A JSON string representation of the Zod schema for the skill\'s input, including descriptions for each field.'
+      'Una representación en cadena JSON del esquema Zod para la entrada de la habilidad, incluyendo descripciones para cada campo.'
     ),
   outputSchemaDefinition:
     z.string().describe(
-      'A JSON string representation of the Zod schema for the skill\'s output, including descriptions for each field.'
+      'Una representación en cadena JSON del esquema Zod para la salida de la habilidad, incluyendo descripciones para cada campo.'
     ),
 });
 export type GenerateSkillDocumentationInput = z.infer<
@@ -32,12 +32,12 @@ export type GenerateSkillDocumentationInput = z.infer<
 >;
 
 /**
- * Represents the output for generated skill documentation.
+ * Representa la salida para la documentación de la habilidad generada.
  */
 const GenerateSkillDocumentationOutputSchema = z.object({
   generatedMarkdown:
     z.string().describe(
-      'The generated markdown content for the skill, including a description, clear instructions, and at least one usage example with input/output.'
+      'El contenido markdown generado para la habilidad, incluyendo una descripción, instrucciones claras y al menos un ejemplo de uso con entrada/salida.'
     ),
 });
 export type GenerateSkillDocumentationOutput = z.infer<
@@ -45,10 +45,10 @@ export type GenerateSkillDocumentationOutput = z.infer<
 >;
 
 /**
- * Generates comprehensive markdown documentation for an AI skill based on its definition.
+ * Genera documentación exhaustiva en markdown para una habilidad de IA basada en su definición.
  *
- * @param input - The input containing skill name, purpose, problem solved, and schema definitions.
- * @returns A promise that resolves to an object containing the generated markdown documentation.
+ * @param input - La entrada que contiene el nombre de la habilidad, propósito, problema resuelto y definiciones de esquema.
+ * @returns Una promesa que se resuelve en un objeto que contiene la documentación markdown generada.
  */
 export async function generateSkillDocumentation(
   input: GenerateSkillDocumentationInput
@@ -60,31 +60,33 @@ const prompt = ai.definePrompt({
   name: 'generateSkillDocumentationPrompt',
   input: {schema: GenerateSkillDocumentationInputSchema},
   output: {schema: GenerateSkillDocumentationOutputSchema},
-  prompt: `You are an expert AI documentation writer. Your task is to generate clear, comprehensive, and user-friendly documentation for an AI skill, suitable for a SKILL.md file.
+  prompt: `Eres un experto escritor de documentación técnica para IA. Tu tarea es generar documentación clara, completa y fácil de usar para una habilidad de IA, adecuada para un archivo SKILL.md.
 
-The documentation should include:
-1.  **Skill Name and Description**: A clear, concise summary of what the skill does.
-2.  **Problem Solved**: Explain the real-world problem this skill addresses.
-3.  **Instructions**: Step-by-step guidance on how to use the skill, referencing its inputs and outputs.
-4.  **Usage Examples**: At least one detailed example demonstrating how to invoke the skill, including sample input and expected output in JSON format, adhering to the provided schemas.
+IMPORTANTE: Toda la documentación DEBE estar escrita íntegramente en ESPAÑOL.
 
-Use the following information to generate the documentation:
+La documentación debe incluir:
+1.  **Nombre y Descripción de la Habilidad**: Un resumen claro y conciso de lo que hace la habilidad.
+2.  **Problema que Resuelve**: Explicar el problema del mundo real que aborda esta habilidad.
+3.  **Instrucciones**: Guía paso a paso sobre cómo usar la habilidad, haciendo referencia a sus entradas y salidas.
+4.  **Ejemplos de Uso**: Al menos un ejemplo detallado que demuestre cómo invocar la habilidad, incluyendo una entrada de muestra y la salida esperada en formato JSON, adhiriéndose a los esquemas proporcionados.
 
-Skill Name: {{{skillName}}}
-Skill Purpose: {{{skillPurpose}}}
-Problem Solved: {{{problemSolved}}}
+Utiliza la siguiente información para generar la documentación:
 
-Input Schema Definition (JSON):
+Nombre de la Habilidad: {{{skillName}}}
+Propósito de la Habilidad: {{{skillPurpose}}}
+Problema Resuelto: {{{problemSolved}}}
+
+Definición del Esquema de Entrada (JSON):
 \`\`\`json
 {{{inputSchemaDefinition}}}
 \`\`\`
 
-Output Schema Definition (JSON):
+Definición del Esquema de Salida (JSON):
 \`\`\`json
 {{{outputSchemaDefinition}}}
 \`\`\`
 
-Generate the content in Markdown format. Ensure all code blocks are properly formatted.
+Genera el contenido en formato Markdown. Asegúrate de que todos los bloques de código estén formateados correctamente.
 `,
 });
 

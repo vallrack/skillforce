@@ -30,7 +30,7 @@ export function SkillPreview({ markdown, isGenerating, onGenerate, skillName }: 
       <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 py-4">
         <CardTitle className="text-lg flex items-center gap-2">
           <FileText className="w-5 h-5 text-accent" />
-          Preview SKILL.md
+          Vista Previa SKILL.md
         </CardTitle>
         <div className="flex gap-2">
           <Button
@@ -45,12 +45,12 @@ export function SkillPreview({ markdown, isGenerating, onGenerate, skillName }: 
             ) : (
               <Sparkles className="w-4 h-4 text-accent" />
             )}
-            {markdown ? "Regenerate" : "Generate AI Docs"}
+            {markdown ? "Regenerar" : "Generar con IA"}
           </Button>
           {markdown && (
-            <Button onClick={handleDownload} variant="primary" size="sm" className="gap-2">
+            <Button onClick={handleDownload} variant="default" size="sm" className="gap-2">
               <Download className="w-4 h-4" />
-              Export
+              Exportar
             </Button>
           )}
         </div>
@@ -69,9 +69,9 @@ export function SkillPreview({ markdown, isGenerating, onGenerate, skillName }: 
                 <Sparkles className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <h4 className="font-semibold text-lg">No Documentation Generated</h4>
+                <h4 className="font-semibold text-lg">Sin Documentación Generada</h4>
                 <p className="text-muted-foreground max-w-xs mx-auto text-sm">
-                  Complete the metadata and schema forms, then click "Generate AI Docs" to create your SKILL.md.
+                  Completa los metadatos y esquemas, luego haz clic en "Generar con IA" para crear tu SKILL.md.
                 </p>
               </div>
             </div>
