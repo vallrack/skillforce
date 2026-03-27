@@ -3,14 +3,16 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Save, Sparkles, Code2, AlertCircle } from "lucide-react";
+import { ChevronLeft, Save, Sparkles, Code2, AlertCircle, FileText, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MetadataForm } from "@/components/editor/MetadataForm";
 import { SchemaBuilder } from "@/components/editor/SchemaBuilder";
 import { SkillPreview } from "@/components/editor/SkillPreview";
+import { SustentationPreview } from "@/components/editor/SustentationPreview";
 import { getSkill, saveSkill } from "@/lib/storage";
 import { generateSkillDocumentation } from "@/ai/flows/generate-skill-documentation";
+import { generateSustentation } from "@/ai/flows/generate-sustentation-flow";
 import type { SkillDraft } from "@/types/skill";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,6 +22,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   const { toast } = useToast();
   const [skill, setSkill] = useState<SkillDraft | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingSustentation, setIsGeneratingSustentation] = useState(false);
   const [activeTab, setActiveTab] = useState("metadata");
 
   useEffect(() => {
@@ -38,13 +41,13 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
     saveSkill(updated);
   };
 
-  const handleGenerateDocumentation = async () => {
+  const handleGenerateAll = async () => {
     if (!skill) return;
     
     if (!skill.name || !skill.purpose || !skill.problem) {
       toast({
         title: "Faltan Metadatos",
-        description: "Por favor, proporciona un nombre, propósito y descripción del problema primero.",
+        description: "Por favor, completa la información básica primero.",
         variant: "destructive",
       });
       setActiveTab("metadata");
@@ -52,51 +55,52 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
     }
 
     setIsGenerating(true);
+    setIsGeneratingSustentation(true);
+    
     try {
       const inputSchemaDef = JSON.stringify(
-        Object.fromEntries(
-          skill.inputProperties.map(p => [
-            p.name, 
-            { type: p.type, description: p.description, required: p.required }
-          ])
-        ), 
-        null, 
-        2
+        Object.fromEntries(skill.inputProperties.map(p => [p.name, { type: p.type, description: p.description, required: p.required }])), 
+        null, 2
       );
-
       const outputSchemaDef = JSON.stringify(
-        Object.fromEntries(
-          skill.outputProperties.map(p => [
-            p.name, 
-            { type: p.type, description: p.description, required: p.required }
-          ])
-        ), 
-        null, 
-        2
+        Object.fromEntries(skill.outputProperties.map(p => [p.name, { type: p.type, description: p.description, required: p.required }])), 
+        null, 2
       );
 
-      const result = await generateSkillDocumentation({
-        skillName: skill.name,
-        skillPurpose: skill.purpose,
-        problemSolved: skill.problem,
-        inputSchemaDefinition: inputSchemaDef,
-        outputSchemaDefinition: outputSchemaDef,
+      // Generar simultáneamente
+      const [docResult, sustResult] = await Promise.all([
+        generateSkillDocumentation({
+          skillName: skill.name,
+          skillPurpose: skill.purpose,
+          problemSolved: skill.problem,
+          inputSchemaDefinition: inputSchemaDef,
+          outputSchemaDefinition: outputSchemaDef,
+        }),
+        generateSustentation({
+          skillName: skill.name,
+          skillPurpose: skill.purpose,
+          problemSolved: skill.problem,
+        })
+      ]);
+
+      handleUpdate({ 
+        generatedMarkdown: docResult.generatedMarkdown,
+        generatedSustentation: sustResult.sustentationMarkdown
       });
 
-      handleUpdate({ generatedMarkdown: result.generatedMarkdown });
       toast({
-        title: "Documentación Lista",
-        description: "Tu archivo SKILL.md profesional ha sido forjado.",
+        title: "¡Forja Completada!",
+        description: "Se han generado el SKILL.md y el documento de sustentación.",
       });
     } catch (error) {
-      console.error("Falló la generación de documentación", error);
       toast({
-        title: "Generación Fallida",
-        description: "Hubo un error al conectar con la forja de IA. Inténtalo de nuevo.",
+        title: "Error en la forja",
+        description: "No se pudieron generar los documentos. Revisa tu conexión.",
         variant: "destructive",
       });
     } finally {
       setIsGenerating(false);
+      setIsGeneratingSustentation(false);
     }
   };
 
@@ -115,21 +119,20 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
             <div className="h-6 w-px bg-border mx-1" />
             <div className="flex items-center gap-2">
               <Code2 className="w-5 h-5 text-primary" />
-              <span className="font-semibold">{skill.name || "Habilidad sin título"}</span>
-              <span className="text-[10px] bg-secondary px-2 py-0.5 rounded-full text-muted-foreground uppercase tracking-wider font-bold">Borrador</span>
+              <span className="font-semibold">{skill.name || "Nueva Habilidad"}</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" onClick={() => saveSkill(skill)} className="gap-2">
-              <Save className="w-4 h-4" /> Guardar Borrador
+              <Save className="w-4 h-4" /> Guardar
             </Button>
             <Button 
-              className="bg-primary hover:bg-primary/90 text-white gap-2"
-              onClick={handleGenerateDocumentation}
-              disabled={isGenerating}
+              className="bg-primary hover:bg-primary/90 text-white gap-2 shadow-[0_0_15px_rgba(129,94,255,0.3)]"
+              onClick={handleGenerateAll}
+              disabled={isGenerating || isGeneratingSustentation}
             >
               <Sparkles className="w-4 h-4 text-accent" />
-              Forjar SKILL.md
+              Forjar Entregables
             </Button>
           </div>
         </div>
@@ -140,15 +143,15 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           <div className="space-y-6 flex flex-col overflow-y-auto pr-2 custom-scrollbar">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-secondary/50 p-1 mb-8">
-                <TabsTrigger value="metadata" className="data-[state=active]:bg-card data-[state=active]:shadow-sm">Definición y Contexto</TabsTrigger>
-                <TabsTrigger value="schema" className="data-[state=active]:bg-card data-[state=active]:shadow-sm">Esquema de Datos</TabsTrigger>
+                <TabsTrigger value="metadata">Definición</TabsTrigger>
+                <TabsTrigger value="schema">Esquemas</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="metadata" className="mt-0 space-y-8 animate-in fade-in slide-in-from-left-4 duration-300">
+              <TabsContent value="metadata" className="mt-0 space-y-8">
                 <section>
                   <div className="mb-6">
-                    <h2 className="text-xl font-bold mb-1">Contexto de la Habilidad</h2>
-                    <p className="text-sm text-muted-foreground">Define la identidad y el impacto de tu capacidad de IA personalizada.</p>
+                    <h2 className="text-xl font-bold">Configuración de la Habilidad</h2>
+                    <p className="text-sm text-muted-foreground">Define el problema real que resolverá tu agente.</p>
                   </div>
                   <MetadataForm
                     name={skill.name}
@@ -158,31 +161,31 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                   />
                 </section>
                 
-                <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl flex gap-3 items-start">
-                  <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <div className="p-4 bg-accent/10 border border-accent/20 rounded-xl flex gap-3 items-start">
+                  <CheckCircle2 className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                   <div className="text-sm">
-                    <p className="font-semibold text-primary mb-1">Consejo Pro: SKILL.md Estándar</p>
-                    <p className="text-muted-foreground">Declaraciones de propósito claras ayudan a los agentes de IA a decidir cuándo llamar a esta habilidad. Sé específico.</p>
+                    <p className="font-semibold text-accent mb-1">Habilidad para el Curso</p>
+                    <p className="text-muted-foreground">Recuerda que para el curso, tu habilidad debe resolver un problema de desarrollo, gestión o consulta técnica.</p>
                   </div>
                 </div>
               </TabsContent>
 
-              <TabsContent value="schema" className="mt-0 space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+              <TabsContent value="schema" className="mt-0 space-y-8">
                 <section>
                   <div className="mb-6">
-                    <h2 className="text-xl font-bold mb-1">Estructuras de Datos</h2>
-                    <p className="text-sm text-muted-foreground">Define exactamente qué datos entran y salen de tu habilidad.</p>
+                    <h2 className="text-xl font-bold">Contratos de Datos (MCP)</h2>
+                    <p className="text-sm text-muted-foreground">Define las entradas y salidas para que el orquestador sepa cómo llamar a tu tool.</p>
                   </div>
                   <div className="space-y-8">
                     <SchemaBuilder
-                      title="Esquema de Entrada"
-                      description="Datos esperados del agente de IA u orquestador."
+                      title="Entradas (Parameters)"
+                      description="Variables que el agente debe proporcionar."
                       properties={skill.inputProperties}
                       onChange={(inputProperties) => handleUpdate({ inputProperties })}
                     />
                     <SchemaBuilder
-                      title="Esquema de Salida"
-                      description="Datos devueltos por la habilidad al agente."
+                      title="Salidas (Result)"
+                      description="Datos estructurados que devuelve tu habilidad."
                       properties={skill.outputProperties}
                       onChange={(outputProperties) => handleUpdate({ outputProperties })}
                     />
@@ -193,30 +196,36 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           </div>
 
           <div className="h-[calc(100vh-10rem)] sticky top-24">
-            <SkillPreview
-              markdown={skill.generatedMarkdown || ""}
-              isGenerating={isGenerating}
-              onGenerate={handleGenerateDocumentation}
-              skillName={skill.name}
-            />
+            <Tabs defaultValue="skill" className="h-full flex flex-col">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="skill" className="gap-2"><FileText className="w-4 h-4" /> SKILL.md</TabsTrigger>
+                <TabsTrigger value="sustentation" className="gap-2"><AlertCircle className="w-4 h-4" /> Sustentación</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="skill" className="flex-1 overflow-hidden mt-0">
+                <SkillPreview
+                  markdown={skill.generatedMarkdown || ""}
+                  isGenerating={isGenerating}
+                  onGenerate={handleGenerateAll}
+                  skillName={skill.name}
+                />
+              </TabsContent>
+              
+              <TabsContent value="sustentation" className="flex-1 overflow-hidden mt-0">
+                <SustentationPreview
+                  markdown={skill.generatedSustentation || ""}
+                  isGenerating={isGeneratingSustentation}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </main>
       
       <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: hsl(var(--border));
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: hsl(var(--primary) / 0.5);
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 10px; }
       `}</style>
     </div>
   );

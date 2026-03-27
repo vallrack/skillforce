@@ -13,5 +13,6 @@ export type SkillDraft = {
   inputProperties: SchemaProperty[];
   outputProperties: SchemaProperty[];
   generatedMarkdown?: string;
+  generatedSustentation?: string;
   updatedAt: number;
 };
