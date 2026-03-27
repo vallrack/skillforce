@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, use } from "react";
@@ -144,20 +143,24 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           <div className="space-y-6 flex flex-col overflow-y-auto pr-2 custom-scrollbar">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-secondary/50 p-1 mb-8">
-                <TabsTrigger value="metadata">Definición</TabsTrigger>
-                <TabsTrigger value="schema">Esquemas</TabsTrigger>
+                <TabsTrigger value="metadata">Definición y Portada</TabsTrigger>
+                <TabsTrigger value="schema">Esquemas (MCP)</TabsTrigger>
               </TabsList>
 
               <TabsContent value="metadata" className="mt-0 space-y-8">
                 <section>
                   <div className="mb-6">
-                    <h2 className="text-xl font-bold">Configuración de la Habilidad</h2>
-                    <p className="text-sm text-muted-foreground">Define el problema real que resolverá tu agente.</p>
+                    <h2 className="text-xl font-bold">Configuración y Estilo</h2>
+                    <p className="text-sm text-muted-foreground">Define tu habilidad y personaliza tu portada académica.</p>
                   </div>
                   <MetadataForm
                     name={skill.name}
                     purpose={skill.purpose}
                     problem={skill.problem}
+                    studentName={skill.studentName}
+                    universityName={skill.universityName}
+                    courseName={skill.courseName}
+                    logoUri={skill.logoUri}
                     onChange={(updates) => handleUpdate(updates)}
                   />
                 </section>
@@ -216,7 +219,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                 <SustentationPreview
                   markdown={skill.generatedSustentation || ""}
                   isGenerating={isGeneratingSustentation}
-                  skillName={skill.name}
+                  skill={skill}
                 />
               </TabsContent>
             </Tabs>

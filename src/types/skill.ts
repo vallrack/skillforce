@@ -15,4 +15,9 @@ export type SkillDraft = {
   generatedMarkdown?: string;
   generatedSustentation?: string;
   updatedAt: number;
+  // Datos de portada
+  studentName?: string;
+  universityName?: string;
+  courseName?: string;
+  logoUri?: string;
 };

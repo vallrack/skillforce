@@ -51,6 +51,9 @@ export function createNewSkill(): SkillDraft {
       { name: 'vulnerabilidades', type: 'array', description: 'Lista de hallazgos encontrados', required: true },
       { name: 'sugerencia', type: 'string', description: 'Código corregido propuesto', required: true }
     ],
+    studentName: '',
+    universityName: '',
+    courseName: 'IA Generativa y Agentes',
     updatedAt: Date.now(),
   };
 }

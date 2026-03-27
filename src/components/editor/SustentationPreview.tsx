@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Download, Loader2, FileText, FileDown, BookOpen } from "lucide-react";
@@ -6,32 +5,79 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { jsPDF } from "jspdf";
+import type { SkillDraft } from "@/types/skill";
 
 interface SustentationPreviewProps {
   markdown: string;
   isGenerating: boolean;
-  skillName?: string;
+  skill?: SkillDraft;
 }
 
-export function SustentationPreview({ markdown, isGenerating, skillName }: SustentationPreviewProps) {
+export function SustentationPreview({ markdown, isGenerating, skill }: SustentationPreviewProps) {
   const handleExportPDF = () => {
-    if (!markdown) return;
+    if (!markdown || !skill) return;
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 20;
     const maxLineWidth = pageWidth - margin * 2;
 
-    // Título
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text(`Sustentación Técnica: ${skillName || "Habilidad de IA"}`, margin, 20);
+    // --- PORTADA ---
+    if (skill.logoUri) {
+      try {
+        // Intentar añadir el logo (centrado arriba)
+        doc.addImage(skill.logoUri, 'PNG', pageWidth/2 - 25, 30, 50, 50);
+      } catch (e) {
+        console.warn("Could not add logo to PDF", e);
+      }
+    }
 
-    // Contenido
+    doc.setFont("helvetica", "bold");
+    
+    // Universidad
+    doc.setFontSize(16);
+    doc.text(skill.universityName?.toUpperCase() || "INSTITUCIÓN EDUCATIVA", pageWidth / 2, 90, { align: "center" });
+
+    // Título del Trabajo
+    doc.setFontSize(22);
+    doc.text("SUSTENTACIÓN TÉCNICA", pageWidth / 2, 120, { align: "center" });
+    doc.setFontSize(18);
+    doc.text(`Habilidad de IA: ${skill.name}`, pageWidth / 2, 132, { align: "center" });
+
+    // Datos del autor
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "normal");
+    doc.text("Presentado por:", pageWidth / 2, 170, { align: "center" });
+    doc.setFont("helvetica", "bold");
+    doc.text(skill.studentName || "Nombre del Estudiante", pageWidth / 2, 178, { align: "center" });
+
+    // Curso y Fecha
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text(`Programa: ${skill.courseName || "IA Generativa"}`, pageWidth / 2, 210, { align: "center" });
+    
+    const dateStr = new Date().toLocaleDateString('es-ES', { 
+      day: 'numeric', month: 'long', year: 'numeric' 
+    });
+    doc.text(dateStr, pageWidth / 2, 220, { align: "center" });
+
+    // Ciudad/País (Opcional)
+    doc.text("2024", pageWidth / 2, 260, { align: "center" });
+
+    // --- NUEVA PÁGINA PARA CONTENIDO ---
+    doc.addPage();
+    
+    // Encabezado de la segunda página
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("CONTENIDO TÉCNICO", margin, 20);
+    doc.line(margin, 22, pageWidth - margin, 22);
+
+    // Cuerpo del documento
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
     
-    // Eliminar caracteres de markdown básicos para el PDF simple
     const cleanText = markdown
       .replace(/#/g, '')
       .replace(/\*\*/g, '')
@@ -42,7 +88,7 @@ export function SustentationPreview({ markdown, isGenerating, skillName }: Suste
     
     let cursorY = 35;
     lines.forEach((line: string) => {
-      if (cursorY > 280) {
+      if (cursorY > 275) {
         doc.addPage();
         cursorY = 20;
       }
@@ -50,7 +96,7 @@ export function SustentationPreview({ markdown, isGenerating, skillName }: Suste
       cursorY += 7;
     });
 
-    doc.save(`Sustentacion_${skillName?.replace(/\s+/g, '_') || "Habilidad"}.pdf`);
+    doc.save(`Sustentacion_${skill.name.replace(/\s+/g, '_')}.pdf`);
   };
 
   const handleDownloadMD = () => {
@@ -58,7 +104,7 @@ export function SustentationPreview({ markdown, isGenerating, skillName }: Suste
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Sustentacion_${skillName?.replace(/\s+/g, '_') || "Habilidad"}.md`;
+    a.download = `Sustentacion_${skill?.name.replace(/\s+/g, '_') || "Habilidad"}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -77,7 +123,7 @@ export function SustentationPreview({ markdown, isGenerating, skillName }: Suste
             <>
               <Button onClick={handleExportPDF} variant="default" size="sm" className="gap-2 bg-primary hover:bg-primary/90">
                 <FileDown className="w-4 h-4" />
-                Exportar PDF
+                Exportar PDF con Portada
               </Button>
               <Button onClick={handleDownloadMD} variant="outline" size="sm" className="gap-2">
                 <Download className="w-4 h-4" />
