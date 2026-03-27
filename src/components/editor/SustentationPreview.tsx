@@ -1,22 +1,64 @@
+
 "use client";
 
-import { Download, Loader2, FileText, Sparkles, BookOpen } from "lucide-react";
+import { Download, Loader2, FileText, FileDown, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { jsPDF } from "jspdf";
 
 interface SustentationPreviewProps {
   markdown: string;
   isGenerating: boolean;
+  skillName?: string;
 }
 
-export function SustentationPreview({ markdown, isGenerating }: SustentationPreviewProps) {
-  const handleDownload = () => {
+export function SustentationPreview({ markdown, isGenerating, skillName }: SustentationPreviewProps) {
+  const handleExportPDF = () => {
+    if (!markdown) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const maxLineWidth = pageWidth - margin * 2;
+
+    // Título
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text(`Sustentación Técnica: ${skillName || "Habilidad de IA"}`, margin, 20);
+
+    // Contenido
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    
+    // Eliminar caracteres de markdown básicos para el PDF simple
+    const cleanText = markdown
+      .replace(/#/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/`/g, '');
+
+    const lines = doc.splitTextToSize(cleanText, maxLineWidth);
+    
+    let cursorY = 35;
+    lines.forEach((line: string) => {
+      if (cursorY > 280) {
+        doc.addPage();
+        cursorY = 20;
+      }
+      doc.text(line, margin, cursorY);
+      cursorY += 7;
+    });
+
+    doc.save(`Sustentacion_${skillName?.replace(/\s+/g, '_') || "Habilidad"}.pdf`);
+  };
+
+  const handleDownloadMD = () => {
     const blob = new Blob([markdown], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Sustentacion_Habilidad.md`;
+    a.download = `Sustentacion_${skillName?.replace(/\s+/g, '_') || "Habilidad"}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -32,10 +74,16 @@ export function SustentationPreview({ markdown, isGenerating }: SustentationPrev
         </CardTitle>
         <div className="flex gap-2">
           {markdown && (
-            <Button onClick={handleDownload} variant="default" size="sm" className="gap-2">
-              <Download className="w-4 h-4" />
-              Exportar MD
-            </Button>
+            <>
+              <Button onClick={handleExportPDF} variant="default" size="sm" className="gap-2 bg-primary hover:bg-primary/90">
+                <FileDown className="w-4 h-4" />
+                Exportar PDF
+              </Button>
+              <Button onClick={handleDownloadMD} variant="outline" size="sm" className="gap-2">
+                <Download className="w-4 h-4" />
+                MD
+              </Button>
+            </>
           )}
         </div>
       </CardHeader>

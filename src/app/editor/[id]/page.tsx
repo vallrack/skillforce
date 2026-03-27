@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, use } from "react";
@@ -215,6 +216,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                 <SustentationPreview
                   markdown={skill.generatedSustentation || ""}
                   isGenerating={isGeneratingSustentation}
+                  skillName={skill.name}
                 />
               </TabsContent>
             </Tabs>
