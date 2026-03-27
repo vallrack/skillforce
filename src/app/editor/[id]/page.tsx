@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Save, Sparkles, Code2, AlertCircle, FileText, CheckCircle2, PlayCircle } from "lucide-react";
+import { ChevronLeft, Save, Sparkles, Code2, FileText, CheckCircle2, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MetadataForm } from "@/components/editor/MetadataForm";
@@ -24,7 +24,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   const [skill, setSkill] = useState<SkillDraft | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingSustentation, setIsGeneratingSustentation] = useState(false);
-  const [activeTab, setActiveTab] = useState("metadata");
+  const [activeTab, setActiveTab] = useState("definition");
 
   useEffect(() => {
     const draft = getSkill(id);
@@ -51,7 +51,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
         description: "Por favor, completa la información básica primero.",
         variant: "destructive",
       });
-      setActiveTab("metadata");
+      setActiveTab("definition");
       return;
     }
 
@@ -92,6 +92,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
         title: "¡Forja Completada!",
         description: "Se han generado el SKILL.md y el documento de sustentación.",
       });
+      setActiveTab("previews");
     } catch (error) {
       toast({
         title: "Error en la forja",
@@ -109,53 +110,61 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-20">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
             <Link href="/">
-              <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
                 <ChevronLeft className="w-5 h-5" />
               </Button>
             </Link>
-            <div className="h-6 w-px bg-border mx-1" />
-            <div className="flex items-center gap-2">
-              <Code2 className="w-5 h-5 text-primary" />
-              <span className="font-semibold">{skill.name || "Nueva Habilidad"}</span>
+            <div className="h-6 w-px bg-border shrink-0 hidden sm:block" />
+            <div className="flex items-center gap-2 overflow-hidden">
+              <Code2 className="w-5 h-5 text-primary shrink-0" />
+              <span className="font-semibold truncate text-sm sm:text-base">{skill.name || "Nueva Habilidad"}</span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => saveSkill(skill)} className="gap-2">
+          <div className="flex items-center gap-2 shrink-0">
+            <Button variant="outline" size="sm" onClick={() => saveSkill(skill)} className="gap-2 hidden sm:flex">
               <Save className="w-4 h-4" /> Guardar
             </Button>
             <Button 
+              size="sm"
               className="bg-primary hover:bg-primary/90 text-white gap-2 shadow-[0_0_15px_rgba(129,94,255,0.3)]"
               onClick={handleGenerateAll}
               disabled={isGenerating || isGeneratingSustentation}
             >
               <Sparkles className="w-4 h-4 text-accent" />
-              Forjar Entregables
+              <span className="hidden xs:inline">Forjar Entregables</span>
+              <span className="xs:hidden">Forjar</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-6 py-8">
-        <Tabs defaultValue="definition" className="h-full flex flex-col space-y-8">
-          <div className="flex items-center justify-between">
-            <TabsList className="bg-secondary/50 p-1">
-              <TabsTrigger value="definition" className="gap-2"><Code2 className="w-4 h-4" /> Definición</TabsTrigger>
-              <TabsTrigger value="lab" className="gap-2 text-accent"><PlayCircle className="w-4 h-4" /> Laboratorio (Evidencia)</TabsTrigger>
-              <TabsTrigger value="previews" className="gap-2"><FileText className="w-4 h-4" /> Entregables</TabsTrigger>
+      <main className="flex-1 container mx-auto px-4 sm:px-6 py-4 sm:py-8 overflow-hidden flex flex-col">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col space-y-4 sm:space-y-8 overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <TabsList className="bg-secondary/50 p-1 w-full sm:w-auto grid grid-cols-3 sm:flex">
+              <TabsTrigger value="definition" className="gap-2 text-xs sm:text-sm">
+                <Code2 className="w-4 h-4 hidden xs:block" /> Definición
+              </TabsTrigger>
+              <TabsTrigger value="lab" className="gap-2 text-accent text-xs sm:text-sm">
+                <PlayCircle className="w-4 h-4 hidden xs:block" /> Lab
+              </TabsTrigger>
+              <TabsTrigger value="previews" className="gap-2 text-xs sm:text-sm">
+                <FileText className="w-4 h-4 hidden xs:block" /> Entrega
+              </TabsTrigger>
             </TabsList>
             
-            <div className="text-xs text-muted-foreground flex items-center gap-2">
+            <div className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-2 justify-end sm:justify-start">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               Modo Editor Activo
             </div>
           </div>
 
-          <TabsContent value="definition" className="mt-0 focus-visible:ring-0">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-              <div className="space-y-8 overflow-y-auto pr-2 max-h-[calc(100vh-16rem)] custom-scrollbar">
+          <TabsContent value="definition" className="mt-0 focus-visible:ring-0 flex-1 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 h-full overflow-y-auto lg:overflow-hidden pb-8 lg:pb-0">
+              <div className="space-y-8 lg:overflow-y-auto lg:pr-2 lg:h-full custom-scrollbar">
                 <MetadataForm
                   name={skill.name}
                   purpose={skill.purpose}
@@ -176,7 +185,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                 </div>
               </div>
 
-              <div className="space-y-8 overflow-y-auto pr-2 max-h-[calc(100vh-16rem)] custom-scrollbar">
+              <div className="space-y-8 lg:overflow-y-auto lg:pr-2 lg:h-full custom-scrollbar">
                 <SchemaBuilder
                   title="Entradas (Parameters)"
                   description="Variables que el agente debe proporcionar."
@@ -193,32 +202,41 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
             </div>
           </TabsContent>
 
-          <TabsContent value="lab" className="mt-0 focus-visible:ring-0 h-[calc(100vh-16rem)]">
+          <TabsContent value="lab" className="mt-0 focus-visible:ring-0 flex-1 overflow-hidden">
             <TestLab skill={skill} />
           </TabsContent>
 
-          <TabsContent value="previews" className="mt-0 focus-visible:ring-0 h-[calc(100vh-16rem)]">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-              <SkillPreview
-                markdown={skill.generatedMarkdown || ""}
-                isGenerating={isGenerating}
-                onGenerate={handleGenerateAll}
-                skillName={skill.name}
-              />
-              <SustentationPreview
-                markdown={skill.generatedSustentation || ""}
-                isGenerating={isGeneratingSustentation}
-                skill={skill}
-              />
+          <TabsContent value="previews" className="mt-0 focus-visible:ring-0 flex-1 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 h-full overflow-y-auto lg:overflow-hidden pb-8 lg:pb-0">
+              <div className="lg:h-full">
+                <SkillPreview
+                  markdown={skill.generatedMarkdown || ""}
+                  isGenerating={isGenerating}
+                  onGenerate={handleGenerateAll}
+                  skillName={skill.name}
+                />
+              </div>
+              <div className="lg:h-full">
+                <SustentationPreview
+                  markdown={skill.generatedSustentation || ""}
+                  isGenerating={isGeneratingSustentation}
+                  skill={skill}
+                />
+              </div>
             </div>
           </TabsContent>
         </Tabs>
       </main>
       
       <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 10px; }
+        @media (min-width: 1024px) {
+          .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 10px; }
+        }
+        @container (max-width: 400px) {
+          .xs-hidden { display: none; }
+        }
       `}</style>
     </div>
   );
