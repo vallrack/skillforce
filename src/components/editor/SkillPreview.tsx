@@ -14,6 +14,7 @@ interface SkillPreviewProps {
 
 export function SkillPreview({ markdown, isGenerating, onGenerate, skillName }: SkillPreviewProps) {
   const handleDownload = () => {
+    if (!markdown) return;
     const blob = new Blob([markdown], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -50,7 +51,7 @@ export function SkillPreview({ markdown, isGenerating, onGenerate, skillName }: 
           {markdown && (
             <Button onClick={handleDownload} variant="default" size="sm" className="gap-2 flex-1 sm:flex-none">
               <Download className="w-4 h-4" />
-              <span className="xs:inline">Exportar</span>
+              <span className="xs:inline">Descargar .md</span>
             </Button>
           )}
         </div>

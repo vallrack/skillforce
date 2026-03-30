@@ -17,60 +17,88 @@ export function SustentationPreview({ markdown, isGenerating, skill }: Sustentat
   const handleExportPDF = () => {
     if (!markdown || !skill) return;
 
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 20;
-    const maxLineWidth = pageWidth - margin * 2;
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 20;
+      const maxLineWidth = pageWidth - margin * 2;
 
-    if (skill.logoUri) {
-      try {
-        doc.addImage(skill.logoUri, 'PNG', pageWidth/2 - 25, 30, 50, 50);
-      } catch (e) {
-        console.warn("Could not add logo to PDF", e);
+      // --- PÁGINA 1: PORTADA ---
+      if (skill.logoUri) {
+        try {
+          // Detectar formato simple o usar PNG por defecto
+          const format = skill.logoUri.includes('png') ? 'PNG' : 'JPEG';
+          doc.addImage(skill.logoUri, format, pageWidth / 2 - 25, 30, 50, 50);
+        } catch (e) {
+          console.warn("No se pudo añadir el logo al PDF", e);
+        }
       }
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(skill.universityName?.toUpperCase() || "INSTITUCIÓN EDUCATIVA", pageWidth / 2, 90, { align: "center" });
+      
+      doc.setFontSize(22);
+      doc.text("SUSTENTACIÓN TÉCNICA", pageWidth / 2, 120, { align: "center" });
+      
+      doc.setFontSize(18);
+      doc.text(`Habilidad de IA: ${skill.name}`, pageWidth / 2, 132, { align: "center" });
+      
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "normal");
+      doc.text("Presentado por:", pageWidth / 2, 170, { align: "center" });
+      
+      doc.setFont("helvetica", "bold");
+      doc.text(skill.studentName || "Nombre del Estudiante", pageWidth / 2, 178, { align: "center" });
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.text(`Programa: ${skill.courseName || "IA Generativa"}`, pageWidth / 2, 210, { align: "center" });
+      
+      const dateStr = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+      doc.text(dateStr, pageWidth / 2, 225, { align: "center" });
+      
+      doc.text("2024 - 2025", pageWidth / 2, 270, { align: "center" });
+
+      // --- PÁGINA 2 EN ADELANTE: CONTENIDO ---
+      doc.addPage();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("CONTENIDO TÉCNICO", margin, 20);
+      doc.line(margin, 22, pageWidth - margin, 22);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      
+      // Limpieza básica de Markdown para el PDF
+      const cleanText = markdown
+        .replace(/#/g, '')
+        .replace(/\*\*/g, '')
+        .replace(/\*/g, '')
+        .replace(/`/g, '');
+        
+      const lines = doc.splitTextToSize(cleanText, maxLineWidth);
+      let cursorY = 35;
+      
+      lines.forEach((line: string) => {
+        if (cursorY > pageHeight - margin) {
+          doc.addPage();
+          cursorY = 20;
+        }
+        doc.text(line, margin, cursorY);
+        cursorY += 7;
+      });
+
+      doc.save(`Sustentacion_${skill.name.replace(/\s+/g, '_')}.pdf`);
+    } catch (error) {
+      console.error("Error generando PDF:", error);
+      alert("Hubo un error al generar el PDF. Por favor, intenta de nuevo.");
     }
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text(skill.universityName?.toUpperCase() || "INSTITUCIÓN EDUCATIVA", pageWidth / 2, 90, { align: "center" });
-    doc.setFontSize(22);
-    doc.text("SUSTENTACIÓN TÉCNICA", pageWidth / 2, 120, { align: "center" });
-    doc.setFontSize(18);
-    doc.text(`Habilidad de IA: ${skill.name}`, pageWidth / 2, 132, { align: "center" });
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "normal");
-    doc.text("Presentado por:", pageWidth / 2, 170, { align: "center" });
-    doc.setFont("helvetica", "bold");
-    doc.text(skill.studentName || "Nombre del Estudiante", pageWidth / 2, 178, { align: "center" });
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.text(`Programa: ${skill.courseName || "IA Generativa"}`, pageWidth / 2, 210, { align: "center" });
-    const dateStr = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
-    doc.text(dateStr, pageWidth / 2, 220, { align: "center" });
-    doc.text("2024", pageWidth / 2, 260, { align: "center" });
-
-    doc.addPage();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("CONTENIDO TÉCNICO", margin, 20);
-    doc.line(margin, 22, pageWidth - margin, 22);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    const cleanText = markdown.replace(/#/g, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '');
-    const lines = doc.splitTextToSize(cleanText, maxLineWidth);
-    let cursorY = 35;
-    lines.forEach((line: string) => {
-      if (cursorY > 275) {
-        doc.addPage();
-        cursorY = 20;
-      }
-      doc.text(line, margin, cursorY);
-      cursorY += 7;
-    });
-    doc.save(`Sustentacion_${skill.name.replace(/\s+/g, '_')}.pdf`);
   };
 
   const handleDownloadMD = () => {
+    if (!markdown) return;
     const blob = new Blob([markdown], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -97,9 +125,9 @@ export function SustentationPreview({ markdown, isGenerating, skill }: Sustentat
                 <span className="hidden xs:inline">PDF Portada</span>
                 <span className="xs:hidden">PDF</span>
               </Button>
-              <Button onClick={handleDownloadMD} variant="outline" size="sm" className="gap-2 flex-none">
+              <Button onClick={handleDownloadMD} variant="outline" size="sm" className="gap-2 flex-none" title="Descargar como Markdown (compatible con Word)">
                 <Download className="w-4 h-4" />
-                <span className="hidden xs:inline">MD</span>
+                <span className="hidden xs:inline">Word/MD</span>
               </Button>
             </>
           )}
