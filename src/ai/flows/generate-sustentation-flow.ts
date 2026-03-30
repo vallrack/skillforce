@@ -11,11 +11,10 @@ const SustentationInputSchema = z.object({
   skillName: z.string(),
   skillPurpose: z.string(),
   problemSolved: z.string(),
-  toolsMentioned: z.array(z.string()).optional(),
 });
 
 const SustentationOutputSchema = z.object({
-  sustentationMarkdown: z.string().describe('El contenido del documento de sustentación en formato Markdown.'),
+  sustentationMarkdown: z.string().describe('El contenido completo y detallado del documento de sustentación en formato Markdown.'),
 });
 
 export type SustentationInput = z.infer<typeof SustentationInputSchema>;
@@ -28,19 +27,25 @@ const prompt = ai.definePrompt({
   name: 'generateSustentationPrompt',
   input: {schema: SustentationInputSchema},
   output: {schema: SustentationOutputSchema},
-  prompt: `Eres un experto en Arquitectura de Agentes de IA y el Model Context Protocol (MCP), especializado en contenidos de las semanas 11 a 15 del curso.
-  
-Genera un documento de sustentación profesional para la habilidad: "{{{skillName}}}".
-El documento debe estar en ESPAÑOL y contener los siguientes puntos obligatorios:
+  prompt: `Eres un experto en Arquitectura de Agentes de IA y el estándar Model Context Protocol (MCP). Tu objetivo es redactar un informe de sustentación técnica IMPECABLE y COMPLETO en ESPAÑOL.
 
-1. **Introducción y Problema Real**: Explica profundamente el problema: "{{{problemSolved}}}". Detalla por qué una solución basada en agentes es superior a una tradicional.
-2. **Arquitectura Técnica y Estándar MCP**: Explica que esta habilidad se ha diseñado bajo el protocolo MCP. Describe el flujo donde el "MCP Server" expone esta "Tool" y el "Agente (Client)" la consume mediante un contrato JSON-RPC.
-3. **Integración con Ecosistemas de Agentes**: Detalla paso a paso cómo conectar esta skill con herramientas como Claude Code, Cursor o Gemini CLI utilizando la configuración de mcpSettings.json.
-4. **Orquestación Multi-Agente**: Explica cómo un "Orquestador" (como LangGraph o CrewAI) utilizaría esta habilidad dentro de un flujo de trabajo complejo, basándose en la descripción semántica del archivo SKILL.md para la selección de herramientas.
-5. **Conclusión**: Resume los beneficios de la estandarización y la interoperabilidad lograda.
+No te detengas hasta completar los 5 puntos siguientes para la habilidad: "{{{skillName}}}".
+
+ESTRUCTURA OBLIGATORIA:
+
+1. INTRODUCCIÓN Y PROBLEMA REAL: Analiza profundamente el problema "{{{problemSolved}}}". Explica por qué una solución basada en Agentes con MCP es superior a una API tradicional (autonomía, contexto dinámico).
+
+2. ARQUITECTURA TÉCNICA Y ESTÁNDAR MCP: Describe el flujo técnico. Explica que la habilidad actúa como un "MCP Server" que expone herramientas (Tools) que el "Agente (Client)" consume. Menciona el contrato de entrada/salida y el uso de JSON-RPC.
+
+3. INTEGRACIÓN CON ECOSISTEMAS: Explica cómo un usuario conectaría esta skill a Claude Code o Cursor. Detalla el uso de mcpSettings.json para registrar el servidor y permitir que el LLM "vea" la herramienta.
+
+4. ORQUESTACIÓN MULTI-AGENTE: Explica cómo un orquestador (ej. LangGraph) usaría esta skill. Cómo la descripción semántica en el SKILL.md permite que el agente decida cuándo invocarla durante un razonamiento complejo.
+
+5. CONCLUSIÓN: Beneficios de la interoperabilidad y el futuro de las Agent Skills.
 
 Propósito de la habilidad: {{{skillPurpose}}}
-`,
+
+REGLA CRÍTICA: Asegúrate de cerrar todas las ideas. El documento debe ser profesional y listo para una entrega académica.`,
 });
 
 const generateSustentationFlow = ai.defineFlow(
